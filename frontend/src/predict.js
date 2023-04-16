@@ -9,8 +9,7 @@ import React from "react";
 import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
 import { Paper, CardActionArea, CardMedia, Grid, TableContainer, Table, TableBody, TableHead, TableRow, TableCell, Button, CircularProgress } from "@material-ui/core";
-import cblogo from "./cblogo.PNG";
-import image from "./bg.png";
+import image from "./Assets/bg.png";
 import { DropzoneArea } from 'material-ui-dropzone';
 import { common } from '@material-ui/core/colors';
 import Clear from '@material-ui/icons/Clear';
@@ -85,7 +84,7 @@ const useStyles = makeStyles((theme) => ({
     display: 'none',
   },
   uploadIcon: {
-    background: 'white',
+    background: '#684141',
   },
   tableContainer: {
     backgroundColor: 'transparent !important',
@@ -135,15 +134,15 @@ const useStyles = makeStyles((theme) => ({
     alignItems: 'center',
   },
   appbar: {
-    background: '#be6a77',
+    background: 'white',
     boxShadow: 'none',
-    color: 'white'
+    color: '#684141'
   },
   loader: {
     color: '#be6a77 !important',
   }
 }));
-export const ImageUpload = () => {
+const Predict = () => {
   const classes = useStyles();
   const [selectedFile, setSelectedFile] = useState();
   const [preview, setPreview] = useState();
@@ -210,15 +209,6 @@ export const ImageUpload = () => {
 
   return (
     <React.Fragment>
-      <AppBar position="static" className={classes.appbar}>
-        <Toolbar>
-          <Typography className={classes.title} variant="h6" noWrap>
-            Yellow Apricot Tree Disease Classification
-          </Typography>
-          <div className={classes.grow} />
-          <Avatar src={cblogo}></Avatar>
-        </Toolbar>
-      </AppBar>
       <Container maxWidth={false} className={classes.mainContainer} disableGutters={true}>
         <Grid
           className={classes.gridContainer}
@@ -286,3 +276,5 @@ export const ImageUpload = () => {
     </React.Fragment >
   );
 };
+
+export default Predict;
