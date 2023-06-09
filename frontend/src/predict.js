@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { makeStyles, withStyles } from "@material-ui/core/styles";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
@@ -13,9 +13,9 @@ import image from "./Assets/bg.png";
 import { DropzoneArea } from 'material-ui-dropzone';
 import { common } from '@material-ui/core/colors';
 import Clear from '@material-ui/icons/Clear';
-
-
-
+import { postPredict } from './services/axios';
+import { AuthContext } from './App';
+import { useNavigate } from "react-router-dom";
 
 const ColorButton = withStyles((theme) => ({
   root: {
@@ -67,7 +67,7 @@ const useStyles = makeStyles((theme) => ({
   imageCard: {
     margin: "auto",
     maxWidth: 400,
-    height: 500,
+    height: 520,
     backgroundColor: 'transparent',
     boxShadow: '0px 9px 70px 0px rgb(0 0 0 / 30%) !important',
     borderRadius: '15px',
@@ -149,21 +149,24 @@ const Predict = () => {
   const [data, setData] = useState();
   const [image, setImage] = useState(false);
   const [isLoading, setIsloading] = useState(false);
+  const { authState, setAuthState } = useContext(AuthContext);
+  const navigate = useNavigate();
+
   let confidence = 0;
 
   const sendFile = async () => {
     if (image) {
       let formData = new FormData();
       formData.append("file", selectedFile);
-      let res = await axios({
-        method: "post",
-        url: process.env.REACT_APP_API_URL,
-        data: formData,
-      });
-      if (res.status === 200) {
-        setData(res.data);
-      }
-      setIsloading(false);
+      postPredict(formData)
+        .then((res) => {
+          setData(res.data);
+
+          setIsloading(false);
+        }).catch((e) => {
+          setIsloading(false);
+          console.log(e?.message)
+        })
     }
   }
 
@@ -207,6 +210,11 @@ const Predict = () => {
     confidence = (parseFloat(data.confidence) * 100).toFixed(2);
   }
 
+  const navigateToHome = () => {
+    setAuthState((state)=> ({ ...state, select: data?.id }));
+    navigate(`/`);
+  }
+
   return (
     <React.Fragment>
       <Container maxWidth={false} className={classes.mainContainer} disableGutters={true}>
@@ -232,7 +240,7 @@ const Predict = () => {
               {!image && <CardContent className={classes.content}>
                 <DropzoneArea
                   acceptedFiles={['image/*']}
-                  dropzoneText={"Upload an image of a Yellow Apricot leaf to process"}
+                  dropzoneText={"Đăng tải hình ảnh lá mai tại đây"}
                   onChange={onSelectFile}
                 />
               </CardContent>}
@@ -241,8 +249,8 @@ const Predict = () => {
                   <Table className={classes.table} size="small" aria-label="simple table">
                     <TableHead className={classes.tableHead}>
                       <TableRow className={classes.tableRow}>
-                        <TableCell className={classes.tableCell1}>Label:</TableCell>
-                        <TableCell align="right" className={classes.tableCell1}>Confidence:</TableCell>
+                        <TableCell className={classes.tableCell1}>Bệnh</TableCell>
+                        <TableCell align="right" className={classes.tableCell1}>Điểm tự tin:</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody className={classes.tableBody}>
@@ -252,6 +260,7 @@ const Predict = () => {
                         </TableCell>
                         <TableCell align="right" className={classes.tableCell}>{confidence}%</TableCell>
                       </TableRow>
+                      {(data.id!=1)&&<button className="btn text-primary py-0 fs-5" onClick={navigateToHome}>Chi tiết về bệnh</button>}
                     </TableBody>
                   </Table>
                 </TableContainer>
@@ -259,16 +268,15 @@ const Predict = () => {
               {isLoading && <CardContent className={classes.detail}>
                 <CircularProgress color="secondary" className={classes.loader} />
                 <Typography className={classes.title} variant="h6" noWrap>
-                  Processing
+                  Đang xử lý
                 </Typography>
               </CardContent>}
             </Card>
           </Grid>
           {data &&
             <Grid item className={classes.buttonGrid} >
-
               <ColorButton variant="contained" className={classes.clearButton} color="primary" component="span" size="large" onClick={clearData} startIcon={<Clear fontSize="large" />}>
-                Clear
+                Xóa
               </ColorButton>
             </Grid>}
         </Grid >
@@ -278,3 +286,6 @@ const Predict = () => {
 };
 
 export default Predict;
+
+//Khi detect được lá khỏe mạnh, 'Chi tiết về bệnh' nên được ẩn đi.
+//Khi Zoom out thì phần bottom lộ vạch trắng.

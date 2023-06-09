@@ -1,13 +1,38 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useState, useContext } from "react";
+import { AuthContext } from '../App';
+import { signinUser , setAuthorization } from '../services/axios';
 
 export const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setLoading] = useState(false);
+  const { setAuthState } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   const onLogin = () => {
-    console.log(email, password)
+    if(!email || !password) {
+      return;
+    }
+    setLoading(true);
+    signinUser({
+      email, password
+    })
+      .then((res) => {
+        setAuthorization(res.data?.token);
+        setAuthState({
+          isAuthenticated: true,
+          user: res.data?.user
+        });
+        localStorage.setItem("store", JSON.stringify(res.data));
+
+        navigate('/predict');
+        setLoading(false);
+      }).catch((e) => {
+        setLoading(false);
+        console.log(e?.message)
+      })
   }
   return (
     <div>
@@ -15,7 +40,7 @@ export const Login = () => {
         <div className="row">
           <div className="col-4"></div>
           <div className="col-4 m-4 p-3 shadow p-3 mb-5 bg-body-tertiary rounded ">
-            <div className="fs-1 mb-2">Sign In</div>
+            <div className="fs-2 mb-2">ĐĂNG NHẬP</div>
             <div>
               <div className="text-start">Email</div>
               <div>
@@ -27,7 +52,7 @@ export const Login = () => {
               </div>
             </div>
             <div className="mt-2">
-              <div className="text-start">Password</div>
+              <div className="text-start">Mật khẩu</div>
               <div>
                 <input
                   type="password"
@@ -39,13 +64,13 @@ export const Login = () => {
             </div>
 
             <div className="my-3">
-              <button className="btn btn-primary" onClick={onLogin}>Sign In</button>
+              <button className="btn btn-primary" onClick={onLogin} disabled={isLoading}>Đăng nhập</button>
             </div>
 
             <div>
-              Need an account?
+              Tạo tài khoản mới?
               <Link to="/register" className="mx-3 text-primary">
-                Sign up
+                Đăng ký
               </Link>
             </div>
           </div>
